@@ -1,6 +1,5 @@
 # Course Search Application (Assignment A)
 
-&#x20;&#x20;
 [![Java](https://img.shields.io/badge/Java-17+-blue.svg)](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html) [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-brightgreen.svg)](https://spring.io/projects/spring-boot) [![Elasticsearch](https://img.shields.io/badge/Elasticsearch-9.x-orange.svg)](https://www.elastic.co/) [![Maven](https://img.shields.io/badge/Maven-3.6+-blue.svg)](https://maven.apache.org/) [![Docker](https://img.shields.io/badge/Docker-Compose-blue.svg)](https://docs.docker.com/compose/) [![Git](https://img.shields.io/badge/Git-latest-gray.svg)](https://git-scm.com/)
 
 A Spring Boot application providing powerful course-search functionality on top of Elasticsearch, including full-text queries, advanced filters, sorting, and pagination.
@@ -13,11 +12,12 @@ A Spring Boot application providing powerful course-search functionality on top 
 2. [Project Setup](#-project-setup)
 3. [Configuration](#-configuration)
 4. [Running the Application](#-running-the-application)
-5. [API Endpoints & Usage](#-api-endpoints--usage)
-6. [Debugging & Troubleshooting](#-debugging--troubleshooting)
-7. [Assignment A Checklist](#-assignment-a-checklist)
-8. [Next Steps (Bonus)](#-next-steps-bonus)
-9. [Author](#-author)
+5. [Running with Docker](#-running-with-docker)
+6. [API Endpoints & Usage](#-api-endpoints--usage)
+7. [Debugging & Troubleshooting](#-debugging--troubleshooting)
+8. [Assignment A Checklist](#-assignment-a-checklist)
+9. [Next Steps (Bonus)](#-next-steps-bonus)
+10. [Author](#-author)
 
 ---
 
@@ -30,6 +30,7 @@ Before you begin, ensure you have the following installed:
 | **Java**          | 17 or higher     | Download from [Oracle JDK](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html)               |
 | **Maven**         | 3.6 or higher    | Download from [Apache Maven](https://maven.apache.org/download.cgi), then unpack and add `bin/` to your `PATH` |
 | **Elasticsearch** | 7.x or 8.x       | Download from [Elastic.co](https://www.elastic.co/downloads/elasticsearch)                                     |
+| **Docker**        | Latest           | Download from [Docker Desktop](https://www.docker.com/products/docker-desktop/)                                |
 | **Git**           | Latest           | Download from [Git SCM](https://git-scm.com/downloads)                                                         |
 
 > **Tip:** Confirm Java & Maven installation:
@@ -50,65 +51,75 @@ Before you begin, ensure you have the following installed:
    cd ElasticSearch-REST-API
    ```
 
-2. **Verify Elasticsearch** is up and running on `localhost:9200`:
+2. **Build the project**
 
    ```bash
-   curl http://localhost:9200
+   mvn clean package -DskipTests
    ```
-
-   You should see JSON with your cluster info.
-
-3. **Disable Elasticsearch security** (if ES fails to start due to security defaults):
-
-   * Open `elasticsearch.yml` (in `<ES_HOME>/config/`) and add:
-
-     ```yaml
-     xpack.security.enabled: false
-     xpack.security.transport.ssl.enabled: false
-     ```
-   * Restart Elasticsearch.
-
-4. **Build & Run** the Spring Boot application:
-
-   ```bash
-   mvn clean install
-   mvn spring-boot:run
-   ```
-
-> The app starts at `http://localhost:8080` and automatically bootstraps sample data.
 
 ---
 
 ## ⚙️ Configuration
 
-All settings are in `src/main/resources/application.properties`:
+Ensure `application.properties` is configured for Docker:
 
 ```properties
-# Elasticsearch connection
-to.elasticsearch.host=localhost
-to.elasticsearch.port=9200
-
-# Logging (DEBUG for troubleshooting)
-logging.level.com.example.coursesearch=INFO
+server.port=8080
+spring.elasticsearch.uris=http://elasticsearch:9200
+spring.elasticsearch.connection-timeout=5s
+spring.elasticsearch.socket-timeout=60s
+app.elasticsearch.index.courses=courses
+logging.level.com.example.coursesearch=DEBUG
 ```
-
-Feel free to switch `INFO` to `DEBUG` for verbose logs.
 
 ---
 
-## 🏃 Running the Application
+## 🐳 Running with Docker
 
-1. **Data Ingestion**: On startup, the app reads `sample-courses.json` (50+ courses) and indexes into the `courses` index. Check logs:
+### Step 1: Build the JAR
 
-   ```text
-   INFO  Starting data ingestion...
-   INFO  Indexed 52 courses into Elasticsearch
+```bash
+mvn clean package -DskipTests
+```
+
+### Step 2: Run with Docker Compose
+
+```bash
+docker-compose up --build
+```
+
+This will:
+
+* Start Elasticsearch (on port 9200)
+* Build and start your Spring Boot app (on port 8080)
+* Wait for Elasticsearch to be healthy before the app starts
+
+### Verify:
+
+```bash
+curl http://localhost:8080/api/search
+```
+
+---
+
+## 🏃 Running the Application (Locally without Docker)
+
+1. **Ensure Elasticsearch is running** at `localhost:9200`
+
+2. **Disable Elasticsearch security** if needed by editing `elasticsearch.yml`:
+
+   ```yaml
+   xpack.security.enabled: false
+   xpack.security.transport.ssl.enabled: false
    ```
-2. **Verify** via:
+
+3. **Run the app**
 
    ```bash
-   curl -X GET "localhost:9200/courses/_count"
+   mvn spring-boot:run
    ```
+
+The app starts at `http://localhost:8080` and automatically indexes data.
 
 ---
 
@@ -308,13 +319,13 @@ GET /api/search
 
 ## 🐞 Debugging & Troubleshooting
 
-| Issue                       | Solution                                                                                       |
-| --------------------------- | ---------------------------------------------------------------------------------------------- |
-| **ES connection refused**   | 1. Ensure ES runs on 92002. Check firewall or Docker port mappings                             |
-| **Data not ingesting**      | 1. Verify `sample-courses.json` exists under `src/main/resources`2. Check startup logs         |
-| **Maven build errors**      | 1. Run `mvn clean install -U` 2. Check your `JAVA_HOME` and `MAVEN_HOME` env variables         |
-| **Empty search results**    | 1. Confirm index count (`/_count`) 2. Increase log level to DEBUG for query details            |
-| **Application won’t start** | 1. Ensure correct Java version 2. Check for port conflicts (change `server.port` in properties)|
+| Issue                               | Solution                                                                            |
+| ----------------------------------- | ----------------------------------------------------------------------------------- |
+| **ES connection refused**           | Check that `spring.elasticsearch.uris` uses `http://elasticsearch:9200` in Docker   |
+| **Data not ingesting**              | Confirm `sample-courses.json` is in `src/main/resources/`                           |
+| **App restarts or fails in Docker** | Use `depends_on` and `healthcheck` in `docker-compose.yml`                          |
+| **Maven build fails**               | Check JDK and Maven versions; use `mvn clean install -DskipTests`                   |
+| **Index not found**                 | Check logs for ingestion issues and run `GET /api/search` to trigger index creation |
 
 ---
 
