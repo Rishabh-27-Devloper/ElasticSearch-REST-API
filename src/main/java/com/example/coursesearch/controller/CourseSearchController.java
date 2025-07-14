@@ -3,7 +3,9 @@ package com.example.coursesearch.controller;
 import com.example.coursesearch.document.CourseDocument;
 import com.example.coursesearch.dto.CourseSearchRequest;
 import com.example.coursesearch.dto.CourseSearchResponse;
+import com.example.coursesearch.dto.SuggestionResponse;
 import com.example.coursesearch.service.CourseSearchService;
+import com.example.coursesearch.service.CourseAutocompleteService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -20,6 +22,7 @@ import java.time.LocalDate;
 public class CourseSearchController {
     
     private final CourseSearchService courseSearchService;
+    private final CourseAutocompleteService courseAutocompleteService;
     
     @GetMapping("/search")
     public ResponseEntity<CourseSearchResponse> searchCourses(
@@ -56,6 +59,30 @@ public class CourseSearchController {
         
         log.debug("Returning search response with {} courses out of {} total", 
                 response.getCourses().size(), response.getTotal());
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * Assignment B: Autocomplete endpoint
+     * Returns suggested course titles based on partial input
+     */
+    @GetMapping("/search/suggest")
+    public ResponseEntity<SuggestionResponse> getSuggestions(
+            @RequestParam String q,
+            @RequestParam(defaultValue = "10") Integer size) {
+        
+        log.debug("Received autocomplete request - q: '{}', size: {}", q, size);
+        
+        // Validate size parameter
+        if (size < 1 || size > 20) {
+            size = 10;
+        }
+        
+        SuggestionResponse response = courseAutocompleteService.getSuggestions(q, size);
+        
+        log.debug("Returning {} autocomplete suggestions for query: '{}'", 
+                response.getSuggestions().size(), q);
         
         return ResponseEntity.ok(response);
     }

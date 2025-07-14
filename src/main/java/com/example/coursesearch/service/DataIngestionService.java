@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,10 +39,15 @@ public class DataIngestionService implements CommandLineRunner {
             // Load sample data
             List<CourseDocument> courses = loadSampleData();
             
+            // Process courses to add completion fields
+            courses = courses.stream()
+                    .map(this::enhanceCourseWithCompletion)
+                    .collect(Collectors.toList());
+            
             // Bulk index the data
             courseRepository.saveAll(courses);
             
-            log.info("Successfully indexed {} courses", courses.size());
+            log.info("Successfully indexed {} courses with autocomplete capabilities", courses.size());
             
         } catch (Exception e) {
             log.error("Error during data ingestion: ", e);
@@ -59,5 +65,16 @@ public class DataIngestionService implements CommandLineRunner {
         try (InputStream inputStream = resource.getInputStream()) {
             return objectMapper.readValue(inputStream, new TypeReference<List<CourseDocument>>() {});
         }
+    }
+    
+    /**
+     * Enhances a course document with completion field for autocomplete
+     */
+    private CourseDocument enhanceCourseWithCompletion(CourseDocument course) {
+        if (course.getTitle() != null && !course.getTitle().trim().isEmpty()) {
+            String[] titleSuggest = CourseDocument.createTitleSuggest(course.getTitle());
+            course.setTitleSuggest(titleSuggest);
+        }
+        return course;
     }
 }

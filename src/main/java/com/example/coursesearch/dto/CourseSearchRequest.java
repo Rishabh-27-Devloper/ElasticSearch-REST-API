@@ -25,4 +25,5 @@ public class CourseSearchRequest {
     private String sort = "upcoming"; // upcoming, priceAsc, priceDesc
     private Integer page = 0;
     private Integer size = 10;
+    private Boolean fuzzy = false; // Enable fuzzy search
 }
