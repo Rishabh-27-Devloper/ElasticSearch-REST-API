@@ -1,333 +1,324 @@
-# Course Search Application - Assignment A
-
-A Spring Boot application that provides course search functionality using Elasticsearch with advanced filtering, sorting, and pagination.
-
-## Prerequisites
-
-- Java 17 or higher
-- Maven 3.6+
-- Elasticsearch 9.x running on localhost:9200
-- Git
-
-## Project Structure
-
-```
-src/
-├── main/
-│   ├── java/com/example/coursesearch/
-│   │   ├── config/
-│   │   │   └── ElasticsearchConfig.java
-│   │   ├── controller/
-│   │   │   └── CourseSearchController.java
-│   │   ├── document/
-│   │   │   └── CourseDocument.java
-│   │   ├── dto/
-│   │   │   ├── CourseSearchRequest.java
-│   │   │   └── CourseSearchResponse.java
-│   │   ├── repository/
-│   │   │   └── CourseRepository.java
-│   │   ├── service/
-│   │   │   ├── CourseSearchService.java
-│   │   │   └── DataIngestionService.java
-│   │   └── CourseSearchApplication.java
-│   └── resources/
-│       ├── application.properties
-│       └── sample-courses.json
-└── test/
-```
-
-## Setup Instructions
-
-### 1. Verify Elasticsearch is Running
-
-```bash
-curl http://localhost:9200
-```
-
-Expected response:
-```json
-{
-  "name" : "...",
-  "cluster_name" : "elasticsearch",
-  "version" : {
-    "number" : "9.x.x",
-    ...
-  }
-}
-```
-
-### 2. Clone and Build the Project
-
-```bash
-git clone https://github.com/Rishabh-27-Devloper/ElasticSearch-REST-API.git
-cd ElasticSearch-REST-API
-.\mvnw.cmd clean install
-```
-
-### 3. Run the Application
-
-```bash
-.\mvnw.cmd spring-boot:run
-```
-
-The application will start on `http://localhost:8080`
-
-### 4. Verify Data Ingestion
-
-Check the logs for successful data ingestion:
-```
-INFO  - Starting data ingestion...
-INFO  - Successfully indexed 52 courses
-```
-
-You can also verify in Elasticsearch:
-```bash
-curl -X GET "localhost:9200/courses/_count"
-```
-
-## API Endpoints
-
-### Search Courses
-
-**Endpoint:** `GET /api/search`
-
-**Query Parameters:**
-- `q` (optional): Search keyword for title and description
-- `minAge` (optional): Minimum age filter
-- `maxAge` (optional): Maximum age filter
-- `category` (optional): Course category filter
-- `type` (optional): Course type filter (ONE_TIME, COURSE, CLUB)
-- `minPrice` (optional): Minimum price filter
-- `maxPrice` (optional): Maximum price filter
-- `startDate` (optional): Start date filter (ISO-8601 format)
-- `sort` (optional): Sort option (upcoming, priceAsc, priceDesc) - default: upcoming
-- `page` (optional): Page number (default: 0)
-- `size` (optional): Page size (default: 10)
+# Course Search Application (Assignment A)
 
-**Response Format:**
-```json
-{
-  "total": 52,
-  "courses": [
-    {
-      "id": "1",
-      "title": "Introduction to Mathematics",
-      "description": "A comprehensive introduction to basic mathematical concepts...",
-      "category": "Math",
-      "type": "COURSE",
-      "gradeRange": "6th-8th",
-      "minAge": 11,
-      "maxAge": 14,
-      "price": 150.00,
-      "nextSessionDate": "2025-08-15T10:00:00"
-    }
-  ],
-  "page": 0,
-  "size": 10,
-  "totalPages": 6
-}
-```
+&#x20;&#x20;
 
-## API Usage Examples
+A Spring Boot application providing powerful course-search functionality on top of Elasticsearch, including full-text queries, advanced filters, sorting, and pagination.
 
-### 1. Basic Search - All Courses
+---
 
-```bash
-curl -X GET "http://localhost:8080/api/search"
-```
+## 📋 Table of Contents
 
-### 2. Search by Keyword
+1. [Prerequisites](#-prerequisites)
+2. [Project Setup](#-project-setup)
+3. [Configuration](#-configuration)
+4. [Running the Application](#-running-the-application)
+5. [API Endpoints & Usage](#-api-endpoints--usage)
+6. [Debugging & Troubleshooting](#-debugging--troubleshooting)
+7. [Assignment A Checklist](#-assignment-a-checklist)
+8. [Next Steps (Bonus)](#-next-steps-bonus)
+9. [Author](#-author)
 
-```bash
-curl -X GET "http://localhost:8080/api/search?q=mathematics"
-```
+---
 
-### 3. Filter by Category
+## 🛠️ Prerequisites
 
-```bash
-curl -X GET "http://localhost:8080/api/search?category=Science"
-```
+Before you begin, ensure you have the following installed:
 
-### 4. Filter by Age Range
+| Tool              | Required Version | Installation Guide                                                                                             |
+| ----------------- | ---------------- | -------------------------------------------------------------------------------------------------------------- |
+| **Java**          | 17 or higher     | Download from [Oracle JDK](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html)               |
+| **Maven**         | 3.6 or higher    | Download from [Apache Maven](https://maven.apache.org/download.cgi), then unpack and add `bin/` to your `PATH` |
+| **Elasticsearch** | 7.x or 8.x       | Download from [Elastic.co](https://www.elastic.co/downloads/elasticsearch)                                     |
+| **Git**           | Latest           | Download from [Git SCM](https://git-scm.com/downloads)                                                         |
 
-```bash
-curl -X GET "http://localhost:8080/api/search?minAge=12&maxAge=16"
-```
+> **Tip:** Confirm Java & Maven installation:
+>
+> ```bash
+> java -version
+> mvn -version
+> ```
 
-### 5. Filter by Course Type
+---
 
-```bash
-curl -X GET "http://localhost:8080/api/search?type=COURSE"
-```
+## 🚀 Project Setup
 
-### 6. Filter by Price Range
+1. **Clone the repository**
 
-```bash
-curl -X GET "http://localhost:8080/api/search?minPrice=100&maxPrice=200"
-```
+   ```bash
+   git clone https://github.com/Rishabh-27-Devloper/ElasticSearch-REST-API.git
+   cd ElasticSearch-REST-API
+   ```
 
-### 7. Filter by Start Date
+2. **Verify Elasticsearch** is up and running on `localhost:9200`:
 
-```bash
-curl -X GET "http://localhost:8080/api/search?startDate=2025-08-20T00:00:00"
-```
+   ```bash
+   curl http://localhost:9200
+   ```
 
-### 8. Sort by Price (Ascending)
+   You should see JSON with your cluster info.
 
-```bash
-curl -X GET "http://localhost:8080/api/search?sort=priceAsc"
-```
+3. **Disable Elasticsearch security** (if ES fails to start due to security defaults):
 
-### 9. Sort by Price (Descending)
+   * Open `elasticsearch.yml` (in `<ES_HOME>/config/`) and add:
 
-```bash
-curl -X GET "http://localhost:8080/api/search?sort=priceDesc"
-```
+     ```yaml
+     xpack.security.enabled: false
+     xpack.security.transport.ssl.enabled: false
+     ```
+   * Restart Elasticsearch.
 
-### 10. Pagination
+4. **Build & Run** the Spring Boot application:
 
-```bash
-curl -X GET "http://localhost:8080/api/search?page=1&size=5"
-```
+   ```bash
+   mvn clean install
+   mvn spring-boot:run
+   ```
 
-### 11. Complex Search with Multiple Filters
+> The app starts at `http://localhost:8080` and automatically bootstraps sample data.
 
-```bash
-curl -X GET "http://localhost:8080/api/search?q=programming&category=Technology&minAge=13&maxAge=18&minPrice=200&maxPrice=300&sort=priceAsc&page=0&size=5"
-```
+---
 
-### 12. Search Science Courses for Teenagers
+## ⚙️ Configuration
 
-```bash
-curl -X GET "http://localhost:8080/api/search?category=Science&minAge=13&maxAge=18&sort=upcoming"
-```
+All settings are in `src/main/resources/application.properties`:
 
-### 13. Find Affordable Courses Under $100
-
-```bash
-curl -X GET "http://localhost:8080/api/search?maxPrice=100&sort=priceAsc"
-```
-
-### 14. Search Art Courses
-
-```bash
-curl -X GET "http://localhost:8080/api/search?category=Art&type=COURSE"
-```
-
-### 15. Find Clubs for Elementary Students
-
-```bash
-curl -X GET "http://localhost:8080/api/search?type=CLUB&maxAge=12"
-```
-
-## Expected Behavior
-
-### Search Functionality
-- **Full-text search**: Searches in both title and description fields
-- **Title boost**: Title matches are given higher relevance than description matches
-- **Case-insensitive**: Search terms are case-insensitive
-
-### Filtering
-- **Age filters**: `minAge` and `maxAge` work with course's age range
-- **Category filter**: Exact match on category field
-- **Type filter**: Exact match on course type
-- **Price range**: Filter courses within specified price range
-- **Date filter**: Show only courses on or after the specified date
-
-### Sorting
-- **Default (upcoming)**: Sort by next session date (ascending)
-- **Price ascending**: Sort by price from low to high
-- **Price descending**: Sort by price from high to low
-
-### Pagination
-- **Zero-based indexing**: Page numbers start from 0
-- **Default page size**: 10 courses per page
-- **Total pages**: Calculated based on total results and page size
-
-## Testing the Application
-
-### Test Data Verification
-Verify that all 52 courses are indexed:
-```bash
-curl -X GET "http://localhost:8080/api/search?size=100" | jq '.total'
-```
-
-### Test Search Functionality
-```bash
-# Should return courses containing "math"
-curl -X GET "http://localhost:8080/api/search?q=math"
-
-# Should return only Science courses
-curl -X GET "http://localhost:8080/api/search?category=Science"
-
-# Should return courses suitable for 10-year-olds
-curl -X GET "http://localhost:8080/api/search?minAge=10&maxAge=10"
-```
-
-### Test Sorting
-```bash
-# Verify price sorting (ascending)
-curl -X GET "http://localhost:8080/api/search?sort=priceAsc&size=5"
-
-# Verify price sorting (descending)
-curl -X GET "http://localhost:8080/api/search?sort=priceDesc&size=5"
-```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Elasticsearch Connection Error**
-   - Ensure Elasticsearch is running on localhost:9200
-   - Check firewall settings
-   - Verify Elasticsearch cluster health
-
-2. **Data Not Loading**
-   - Check application logs for ingestion errors
-   - Verify sample-courses.json is in src/main/resources
-   - Check Elasticsearch index exists: `curl -X GET "localhost:9200/courses"`
-
-3. **Search Results Empty**
-   - Verify data was indexed successfully
-   - Check query parameters are correct
-   - Review application logs for errors
-
-### Logs
-Enable debug logging by adding to application.properties:
 ```properties
-logging.level.com.example.coursesearch=DEBUG
+# Elasticsearch connection
+to.elasticsearch.host=localhost
+to.elasticsearch.port=9200
+
+# Logging (DEBUG for troubleshooting)
+logging.level.com.example.coursesearch=INFO
 ```
 
-## Performance Considerations
+Feel free to switch `INFO` to `DEBUG` for verbose logs.
 
-- **Efficient queries**: Uses Elasticsearch filters instead of queries where possible
-- **Pagination**: Implements proper pagination to handle large result sets
-- **Index optimization**: Proper field mappings for optimal search performance
+---
 
-## Course Categories Available
-- Math
-- Science
-- Art
-- Language
-- Technology
-- Life Skills
-- Music
-- Sports
-- Games
-- History
+## 🏃 Running the Application
 
-## Course Types Available
-- `ONE_TIME`: Single session courses
-- `COURSE`: Multi-session courses
-- `CLUB`: Regular club meetings
+1. **Data Ingestion**: On startup, the app reads `sample-courses.json` (50+ courses) and indexes into the `courses` index. Check logs:
 
-## Next Steps for Assignment B (Bonus)
+   ```text
+   INFO  Starting data ingestion...
+   INFO  Indexed 52 courses into Elasticsearch
+   ```
+2. **Verify** via:
 
-To implement Assignment B features:
-1. Add completion suggester mapping to the index
-2. Create autocomplete endpoint `/api/search/suggest`
-3. Implement fuzzy matching in the main search
-4. Update documentation with new features
+   ```bash
+   curl -X GET "localhost:9200/courses/_count"
+   ```
 
-## Author
-Created for Spring Boot Elasticsearch Assignment A
+---
+
+## 📡 API Endpoints & Usage
+
+### 1. Search Courses
+
+```
+GET /api/search
+```
+
+**Query Parameters** (all optional):
+
+* `q` - Keyword (full-text on title & description)
+* `category` - Exact match (e.g., Math, Science)
+* `type` - ONE\_TIME | COURSE | CLUB
+* `minAge`, `maxAge` - Numeric filters
+* `minPrice`, `maxPrice` - Price filters
+* `startDate` - ISO-8601 date (e.g., 2025-08-01)
+* `sort` - upcoming (default), priceAsc, priceDesc
+* `page`, `size` - Pagination (0-based, default size=10)
+
+**Sample Response**:
+
+```json
+{
+  "total":52,
+  "page":0,
+  "size":10,
+  "totalPages":6,
+  "courses":[
+    { "id":"1","title":"Intro to Math","category":"Math","price":150.0,"nextSessionDate":"2025-08-15" }
+    // ...
+  ]
+}
+```
+
+### 2. Example Requests
+
+* **All courses**:
+  
+  ```bash
+  curl "http://localhost:8080/api/search"
+  ```
+  *Sample Response*:
+
+  ```json
+  {
+    "total":52,
+    "page":0,
+    "size":10,
+    "totalPages":6,
+    "courses":[
+      { "id":"1","title":"Intro to Math","category":"Math","price":150.0,"nextSessionDate":"2025-08-15" }
+      // ...
+    ]
+  }
+  ```
+  
+* **By keyword**:
+  
+  ```bash
+  curl "http://localhost:8080/api/search?q=physics"
+  ```
+  *Sample Response*:
+
+  ```json
+  {
+    "total": 2,
+    "courses": [
+      {
+        "id": "2",
+        "title": "Physics for Beginners",
+        "description": "Explore the fundamental principles of physics through hands-on experiments and interactive demonstrations. Learn about motion, forces, and energy.",
+        "category": "Science",
+        "type": "COURSE",
+        "gradeRange": "9th-12th",
+        "minAge": 14,
+        "maxAge": 18,
+        "price": 200,
+        "nextSessionDate": "2025-08-20"
+      },
+      {
+        "id": "49",
+        "title": "Advanced Physics",
+        "description": "Explore advanced physics concepts including quantum mechanics and relativity. For highly motivated students.",
+        "category": "Science",
+        "type": "COURSE",
+        "gradeRange": "11th-12th",
+        "minAge": 16,
+        "maxAge": 18,
+        "price": 280,
+        "nextSessionDate": "2025-09-03"
+      }
+    ],
+    "page": 0,
+    "size": 10,
+    "totalPages": 1
+  }
+  ```
+* **Filters**:
+
+  ```bash
+  curl "http://localhost:8080/api/search?category=Science&minAge=12&maxAge=16&sort=priceAsc"
+  ```
+  *Sample Response*:
+
+  ```json
+  {
+    "total": 9,
+    "courses": [
+      {
+        "id": "28",
+        "title": "Astronomy Club",
+        "description": "Explore the universe through telescope observations and astronomy discussions. Weather permitting outdoor sessions.",
+        "category": "Science",
+        "type": "CLUB",
+        "gradeRange": "4th-9th",
+        "minAge": 9,
+        "maxAge": 15,
+        "price": 50,
+        "nextSessionDate": "2025-08-16"
+      },
+      {
+        "id": "18",
+        "title": "Science Fair Preparation",
+        "description": "Prepare for science fairs with project guidance and presentation skills. One-on-one mentoring included.",
+        "category": "Science",
+        "type": "ONE_TIME",
+        "gradeRange": "5th-8th",
+        "minAge": 10,
+        "maxAge": 14,
+        "price": 110,
+        "nextSessionDate": "2025-08-11"
+      },
+      {
+        "id": "6",
+        "title": "Biology Lab Experiments",
+        "description": "Hands-on biology experiments covering cell structure, genetics, and ecology. Laboratory equipment provided.",
+        "category": "Science",
+        "type": "COURSE",
+        "gradeRange": "9th-11th",
+        "minAge": 14,
+        "maxAge": 17,
+        "price": 180,
+        "nextSessionDate": "2025-08-18"
+      }
+    ],
+    "page": 0,
+    "size": 3,
+    "totalPages": 3
+  }
+  ```
+* **Pagination**:
+
+  ```bash
+  curl "http://localhost:8080/api/search?page=1&size=2"
+  ```
+  *Sample Response*:
+
+  ```json
+  {
+    "total": 52,
+    "courses": [
+      {
+        "id": "4",
+        "title": "Chess Club",
+        "description": "Join our weekly chess club and improve your strategic thinking skills. All skill levels welcome!",
+        "category": "Games",
+        "type": "CLUB",
+        "gradeRange": "3rd-8th",
+        "minAge": 8,
+        "maxAge": 14,
+        "price": 30,
+        "nextSessionDate": "2025-08-12"
+      },
+      {
+        "id": "22",
+        "title": "Public Speaking",
+        "description": "Build confidence and improve communication skills through public speaking exercises and presentations.",
+        "category": "Life Skills",
+        "type": "ONE_TIME",
+        "gradeRange": "6th-12th",
+        "minAge": 11,
+        "maxAge": 18,
+        "price": 90,
+        "nextSessionDate": "2025-08-12"
+      }
+    ],
+    "page": 1,
+    "size": 2,
+    "totalPages": 26
+  }
+  ```
+
+---
+
+## 🐞 Debugging & Troubleshooting
+
+| Issue                       | Solution                                                                                       |
+| --------------------------- | ---------------------------------------------------------------------------------------------- |
+| **ES connection refused**   | 1. Ensure ES runs on 92002. Check firewall or Docker port mappings                             |
+| **Data not ingesting**      | 1. Verify `sample-courses.json` exists under `src/main/resources`2. Check startup logs         |
+| **Maven build errors**      | 1. Run `mvn clean install -U` 2. Check your `JAVA_HOME` and `MAVEN_HOME` env variables         |
+| **Empty search results**    | 1. Confirm index count (`/_count`) 2. Increase log level to DEBUG for query details            |
+| **Application won’t start** | 1. Ensure correct Java version 2. Check for port conflicts (change `server.port` in properties)|
+
+---
+
+## 🙋 Author
+
+*Prakhar Shukla* – B.Tech in Electronics & Communication Engineering (2023–27)
+
+> Feel free to reach out for questions or improvements!
