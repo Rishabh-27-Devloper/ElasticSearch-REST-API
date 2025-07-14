@@ -1,6 +1,7 @@
 # Course Search Application (Assignment A)
 
 &#x20;&#x20;
+[![Java](https://img.shields.io/badge/Java-17+-blue.svg)](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html) [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-brightgreen.svg)](https://spring.io/projects/spring-boot) [![Elasticsearch](https://img.shields.io/badge/Elasticsearch-9.x-orange.svg)](https://www.elastic.co/) [![Maven](https://img.shields.io/badge/Maven-3.6+-blue.svg)](https://maven.apache.org/) [![Docker](https://img.shields.io/badge/Docker-Compose-blue.svg)](https://docs.docker.com/compose/) [![Git](https://img.shields.io/badge/Git-latest-gray.svg)](https://git-scm.com/)
 
 A Spring Boot application providing powerful course-search functionality on top of Elasticsearch, including full-text queries, advanced filters, sorting, and pagination.
 
