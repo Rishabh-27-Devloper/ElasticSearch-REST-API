@@ -1,123 +1,234 @@
-# Course Search Application (Assignment A)
+# Course Search Spring Boot + Elasticsearch
 
-[![Java](https://img.shields.io/badge/Java-17+-blue.svg)](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html) [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-brightgreen.svg)](https://spring.io/projects/spring-boot) [![Elasticsearch](https://img.shields.io/badge/Elasticsearch-9.x-orange.svg)](https://www.elastic.co/) [![Maven](https://img.shields.io/badge/Maven-3.6+-blue.svg)](https://maven.apache.org/) [![Docker](https://img.shields.io/badge/Docker-Compose-blue.svg)](https://docs.docker.com/compose/) [![Git](https://img.shields.io/badge/Git-latest-gray.svg)](https://git-scm.com/)
+[![Java](https://img.shields.io/badge/Java-17+-blue.svg)](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html) [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-brightgreen.svg)](https://spring.io/projects/spring-boot) [![Elasticsearch](https://img.shields.io/badge/Elasticsearch-8.x-orange.svg)](https://www.elastic.co/) [![Maven](https://img.shields.io/badge/Maven-3.6+-blue.svg)](https://maven.apache.org/) [![Docker](https://img.shields.io/badge/Docker-Compose-blue.svg)](https://docs.docker.com/compose/) [![Git](https://img.shields.io/badge/Git-latest-gray.svg)](https://git-scm.com/)
 
-A Spring Boot application providing powerful course-search functionality on top of Elasticsearch, including full-text queries, advanced filters, sorting, and pagination.
-
----
-
-## 📋 Table of Contents
-
-1. [Prerequisites](#-prerequisites)
-2. [Project Setup](#-project-setup)
-3. [Configuration](#-configuration)
-4. [Running the Application](#-running-the-application)
-5. [Running with Docker](#-running-with-docker)
-6. [API Endpoints & Usage](#-api-endpoints--usage)
-7. [Debugging & Troubleshooting](#-debugging--troubleshooting)
-8. [Author](#-author)
+> A Spring Boot application powered by Elasticsearch for real-time course search, featuring full-text search, advanced filtering, sorting, **autocomplete suggestions**, **fuzzy search**, pagination, and more.
 
 ---
 
-## 🛠️ Prerequisites
+## 🚀 Features
 
-Before you begin, ensure you have the following installed:
-
-| Tool              | Required Version | Installation Guide                                                                                             |
-| ----------------- | ---------------- | -------------------------------------------------------------------------------------------------------------- |
-| **Java**          | 17 or higher     | Download from [Oracle JDK](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html)               |
-| **Maven**         | 3.6 or higher    | Download from [Apache Maven](https://maven.apache.org/download.cgi), then unpack and add `bin/` to your `PATH` |
-| **Elasticsearch** | 7.x or 8.x       | Download from [Elastic.co](https://www.elastic.co/downloads/elasticsearch)                                     |
-| **Docker**        | Latest           | Download from [Docker Desktop](https://www.docker.com/products/docker-desktop/)                                |
-| **Git**           | Latest           | Download from [Git SCM](https://git-scm.com/downloads)                                                         |
-
-> **Tip:** Confirm Java & Maven installation:
->
-> ```bash
-> java -version
-> mvn -version
-> ```
+* Full-text search on course title and description
+* Advanced filtering (age, price, category, type, date)
+* Autocomplete suggestions for course titles
+* Fuzzy search (typo-tolerant)
+* Sorting (by upcoming session or price)
+* Pagination
+* Bulk indexing from JSON at startup
+* REST API endpoints
 
 ---
 
-## 🚀 Project Setup
+## 📚 Technologies Used
 
-1. **Clone the repository**
+| Tool/Technology           | Purpose                        |
+| ------------------------- | ------------------------------ |
+| Java 17                   | Programming language           |
+| Spring Boot               | Application framework          |
+| Spring Data Elasticsearch | Integration with Elasticsearch |
+| Elasticsearch 8.11.0      | Search engine backend          |
+| Docker & Docker Compose   | Environment setup              |
+| Maven                     | Build tool                     |
+| Lombok                    | Boilerplate code reduction     |
 
-   ```bash
-   git clone https://github.com/Rishabh-27-Devloper/ElasticSearch-REST-API.git
-   cd ElasticSearch-REST-API
-   ```
+---
 
-2. **Build the project**
+## 📂 Project Directory Structure
 
-   ```bash
-   mvn clean package -DskipTests
-   ```
+```
+src/main/java/com/example/coursesearch/
+├── config/                     # Configuration classes
+│   └── ElasticsearchConfig.java
+├── controller/                # REST API endpoints
+│   └── CourseSearchController.java
+├── document/                  # Elasticsearch document classes
+│   └── CourseDocument.java
+├── dto/                       # DTOs for API requests/responses
+│   ├── CourseSearchRequest.java
+│   ├── CourseSearchResponse.java
+│   └── SuggestionResponse.java
+├── repository/                # Spring Data Elasticsearch Repos
+│   └── CourseRepository.java
+├── service/                   # Business logic layer
+│   ├── CourseSearchService.java
+│   ├── CourseAutocompleteService.java
+│   └── DataIngestionService.java
+└── CourseSearchApplication.java
+```
+
+---
+
+## 📦 Sample Data
+
+File: `src/main/resources/sample-courses.json`
+
+Each course object includes:
+
+* `id`, `title`, `description`, `category`, `type`, `gradeRange`
+* `minAge`, `maxAge`, `price`, `nextSessionDate`
+
+Automatically bulk indexed on app startup.
+
+---
+
+## 🔧 Setup Instructions
+
+### Prerequisites
+
+* Java 17+
+* Maven 3.6+
+* Docker & Docker Compose
+
+### Step-by-step
+
+```bash
+git clone <repo-url>
+cd course-search
+mvn clean package
+docker-compose up -d
+mvn spring-boot:run
+```
+
+Verify Elasticsearch:
+
+```bash
+curl http://localhost:9200
+```
+
+---
+
+## 🔍 API Endpoints
+
+### 1. `GET /api/search`
+
+#### Query Parameters:
+
+* `q` (search keyword)
+* `minAge`, `maxAge`
+* `category`, `type`
+* `minPrice`, `maxPrice`
+* `startDate` (ISO format)
+* `sort` = `upcoming`, `priceAsc`, `priceDesc`
+* `page`, `size`
+
+#### Fuzzy Matching Enabled
+
+* Query like `q=dinors` will still return `Dinosaurs 101`
+
+#### Example:
+
+```bash
+curl "http://localhost:8080/api/search?q=math&minAge=5"
+```
+
+### 2. `GET /api/search/suggest`
+
+#### Query Parameters:
+
+* `q` (partial title, required)
+* `size` (optional, default = 10)
+
+#### Example:
+
+```bash
+curl "http://localhost:8080/api/search/suggest?q=prog"
+```
+
+#### Response:
+
+```json
+{
+  "suggestions": [
+    "Programming Fundamentals",
+    "Advanced Programming",
+    "Programming for Kids"
+  ]
+}
+```
 
 ---
 
 ## ⚙️ Configuration
 
-Ensure `application.properties` is configured for Docker:
+`application.properties`
 
 ```properties
-server.port=8080
-spring.elasticsearch.uris=http://elasticsearch:9200
-spring.elasticsearch.connection-timeout=5s
-spring.elasticsearch.socket-timeout=60s
+spring.elasticsearch.uris=http://localhost:9200
 app.elasticsearch.index.courses=courses
-logging.level.com.example.coursesearch=DEBUG
 ```
 
 ---
 
-## 🐳 Running with Docker
-
-### Step 1: Build the JAR
+## 🔹 Example Search Calls
 
 ```bash
-mvn clean package -DskipTests
-```
+# Basic search
+curl "http://localhost:8080/api/search?q=math"
 
-### Step 2: Run with Docker Compose
+# Filter by category
+curl "http://localhost:8080/api/search?category=Science"
 
-```bash
-docker-compose up --build
-```
+# Fuzzy typo search
+curl "http://localhost:8080/api/search?q=dinors"
 
-This will:
-
-* Start Elasticsearch (on port 9200)
-* Build and start your Spring Boot app (on port 8080)
-* Wait for Elasticsearch to be healthy before the app starts
-
-### Verify:
-
-```bash
-curl http://localhost:8080/api/search
+# Autocomplete suggest
+curl "http://localhost:8080/api/search/suggest?q=adv"
 ```
 
 ---
 
-## 🏃 Running the Application (Locally without Docker)
+## 🔬 Search Logic
 
-1. **Ensure Elasticsearch is running** at `localhost:9200`
+* **Multi-match full-text** on `title`, `description`
+* **Filters**: min/max age, price, category, type, startDate
+* **Sorting**: default `nextSessionDate`, optional `priceAsc` / `priceDesc`
+* **Fuzziness**: enabled for query length > 2, fuzzy typo-tolerant search
+* **Autocomplete**: Completion Suggester on title
 
-2. **Disable Elasticsearch security** if needed by editing `elasticsearch.yml`:
+---
 
-   ```yaml
-   xpack.security.enabled: false
-   xpack.security.transport.ssl.enabled: false
-   ```
+## 📊 Health & Monitoring
 
-3. **Run the app**
+```bash
+curl http://localhost:8080/actuator/health
+curl http://localhost:9200/_cluster/health
+```
 
-   ```bash
-   mvn spring-boot:run
-   ```
+---
 
-The app starts at `http://localhost:8080` and automatically indexes data.
+## ✅ Testing
+
+```bash
+mvn test
+```
+
+* Integration tests for basic search and suggestions recommended
+* Optionally use Testcontainers for ephemeral Elasticsearch instance
+
+---
+
+## 📦 Docker Compose
+
+File: `docker-compose.yml`
+
+```yaml
+version: '3.8'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: elasticsearch
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+```
+
+Start:
+
+```bash
+docker-compose up -d
+```
 
 ---
 
@@ -315,17 +426,27 @@ GET /api/search
 
 ---
 
-## 🐞 Debugging & Troubleshooting
+## 📅 Submission Checklist
 
-| Issue                               | Solution                                                                            |
-| ----------------------------------- | ----------------------------------------------------------------------------------- |
-| **ES connection refused**           | Check that `spring.elasticsearch.uris` uses `http://elasticsearch:9200` in Docker   |
-| **Data not ingesting**              | Confirm `sample-courses.json` is in `src/main/resources/`                           |
-| **App restarts or fails in Docker** | Use `depends_on` and `healthcheck` in `docker-compose.yml`                          |
-| **Maven build fails**               | Check JDK and Maven versions; use `mvn clean install -DskipTests`                   |
-| **Index not found**                 | Check logs for ingestion issues and run `GET /api/search` to trigger index creation |
+* [x] All source code committed
+* [x] Sample data included
+* [x] Elasticsearch starts via Docker
+* [x] Endpoints tested
+* [x] README includes curl examples
+* [x] Bonus: Autocomplete and Fuzzy search implemented
 
 ---
+
+## 📄 License
+
+This project is licensed under the **GNU General Public License v3.0 (GPL-3.0)**. See the [LICENSE](LICENSE) file for more details.
+
+---
+
+## 🙌 Acknowledgements
+
+Thanks to the evaluation team for the opportunity to showcase this project. Please reach out via the form for any clarifications.
+
 
 ## 🙋 Author
 
