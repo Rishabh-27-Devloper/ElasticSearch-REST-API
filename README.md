@@ -82,8 +82,8 @@ Automatically bulk indexed on app startup.
 ### Step-by-step
 
 ```bash
-git clone <repo-url>
-cd course-search
+git clone https://github.com/Rishabh-27-Devloper/ElasticSearch-REST-API.git
+cd ElasticSearch-REST-API
 mvn clean package
 docker-compose up -d
 mvn spring-boot:run
