@@ -67,7 +67,7 @@ cd ElasticSearch-REST-API
 ### 3. Run the Application
 
 ```bash
-mvn spring-boot:run
+.\mvnw.cmd spring-boot:run
 ```
 
 The application will start on `http://localhost:8080`
