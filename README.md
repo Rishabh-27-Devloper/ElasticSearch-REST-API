@@ -15,9 +15,7 @@ A Spring Boot application providing powerful course-search functionality on top 
 5. [Running with Docker](#-running-with-docker)
 6. [API Endpoints & Usage](#-api-endpoints--usage)
 7. [Debugging & Troubleshooting](#-debugging--troubleshooting)
-8. [Assignment A Checklist](#-assignment-a-checklist)
-9. [Next Steps (Bonus)](#-next-steps-bonus)
-10. [Author](#-author)
+8. [Author](#-author)
 
 ---
 
