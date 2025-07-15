@@ -118,7 +118,7 @@ curl http://localhost:9200
 #### Example:
 
 ```bash
-curl "http://localhost:8080/api/search?q=math&minAge=5"
+curl "http://localhost:8080/api/search?q=physics&minAge=5"
 ```
 
 ### 2. `GET /api/search/suggest`
